@@ -81,6 +81,11 @@ from lerobot.configs import parser
 from lerobot.configs.eval import EvalPipelineConfig
 
 
+from lerobot.common.policies.pi0.modeling_pi0 import PI0Policy
+from lerobot.configs.types import FeatureType, PolicyFeature
+
+
+
 def rollout(
     env: gym.vector.VectorEnv,
     policy: PreTrainedPolicy,
