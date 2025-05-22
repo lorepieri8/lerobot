@@ -342,8 +342,13 @@ class PI0Policy(PreTrainedPolicy):
         images = []
         img_masks = []
 
-        present_img_keys = [key for key in self.config.image_features if key in batch]
-        missing_img_keys = [key for key in self.config.image_features if key not in batch]
+        if not self.config.image_features and any('image' in key for key in batch.keys()):
+            image_features = [key for key in batch.keys() if 'image' in key]
+        else:
+            image_features = self.config.image_features
+            
+        present_img_keys = [key for key in image_features if key in batch]
+        missing_img_keys = [key for key in image_features if key not in batch]
 
         if len(present_img_keys) == 0:
             raise ValueError(
@@ -380,8 +385,14 @@ class PI0Policy(PreTrainedPolicy):
 
     def prepare_language(self, batch) -> tuple[Tensor, Tensor]:
         """Tokenize the text input"""
+
+        if "task" in batch:
+            tasks = batch["task"]
+        else:
+            batch_size = batch[OBS_ROBOT].shape[0]
+            tasks = ["transfer cube"] * batch_size
+            
         device = batch[OBS_ROBOT].device
-        tasks = batch["task"]
 
         # PaliGemma prompt has to end with a new line
         tasks = [task if task.endswith("\n") else f"{task}\n" for task in tasks]
