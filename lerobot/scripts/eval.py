@@ -475,10 +475,28 @@ def eval_main(cfg: EvalPipelineConfig):
 
     logging.info("Making policy.")
 
-    policy = make_policy(
-        cfg=cfg.policy,
-        env_cfg=cfg.env,
-    )
+    policy = PI0Policy.from_pretrained("lerobot/pi0")
+    policy.config.output_features = {
+        "action": PolicyFeature(
+            type=FeatureType.ACTION,
+            shape=(14,)  
+        )
+    }   
+    policy.config.input_features = {
+        "observation.images.top": PolicyFeature(
+            type=FeatureType.VISUAL, 
+            shape=(3, 224, 224)
+        ),
+        "observation.state": PolicyFeature(
+            type=FeatureType.STATE,
+            shape=(14,) 
+        )
+    }
+
+    #policy = make_policy(
+    #    cfg=cfg.policy,
+    #    env_cfg=cfg.env,
+    #)
     policy.eval()
 
     with torch.no_grad(), torch.autocast(device_type=device.type) if cfg.policy.use_amp else nullcontext():
